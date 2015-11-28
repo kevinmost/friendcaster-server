@@ -1,5 +1,7 @@
 package com.kevinmost.friendcaster_server.api;
 
+import com.kevinmost.friendcaster_server.util.DurationUtil;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -33,6 +35,11 @@ public class FriendCachester {
       public void onResponse(Response<JSONObject> response, Retrofit retrofit) {
         final JSONObject inner = get(response.body(), "rss", "channel");
         cachedEpisodes = inner.getJSONArray("item");
+        for (int i = 0; i < cachedEpisodes.length(); i++) {
+          final JSONObject thisEpisode = ((JSONObject)cachedEpisodes.get(i));
+          final String mp3String = getMP3URLString(thisEpisode);
+          thisEpisode.put("duration", DurationUtil.getDurationSeconds(mp3String));
+        }
         lastUpdatedTimestamp = System.currentTimeMillis();
         System.err.println("Refreshed cached Friendcast feed");
       }
@@ -42,6 +49,21 @@ public class FriendCachester {
         System.err.println(throwable.getMessage());
       }
     });
+  }
+
+  private static String getMP3URLString(JSONObject object) {
+    for (String key : object.keySet()) {
+      final Object value = object.get(key);
+      if (value instanceof JSONObject) {
+        return getMP3URLString(((JSONObject)value));
+      }
+      if (value instanceof String) {
+        if (((String)value).endsWith("mp3")) {
+          return (String)value;
+        }
+      }
+    }
+    return "";
   }
 
   private static JSONObject get(JSONObject root, String... keys) {
