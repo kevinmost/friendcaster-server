@@ -1,17 +1,19 @@
 package com.kevinmost.friendcaster_server.api;
 
+import com.kevinmost.friendcaster_server.model.RssJson;
+import com.kevinmost.friendcaster_server.model.RssJson.Episode;
+import com.kevinmost.friendcaster_server.model.RssXml;
+import com.kevinmost.friendcaster_server.model.RssXml.Item;
 import com.kevinmost.friendcaster_server.util.DurationUtil;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
+import java.util.List;
+
 public class FriendCachester {
   private static final long INVALIDATION_INTERVAL_MILLIS = 5 * 60 * 1000;
-  private JSONArray cachedEpisodes;
+  private RssJson cachedEpisodes;
 
   private long lastUpdatedTimestamp;
 
@@ -21,7 +23,7 @@ public class FriendCachester {
     refreshCache();
   }
 
-  public JSONArray get() {
+  public RssJson get() {
     final long currentTime = System.currentTimeMillis();
     if (currentTime - lastUpdatedTimestamp > INVALIDATION_INTERVAL_MILLIS) {
       refreshCache();
@@ -30,15 +32,13 @@ public class FriendCachester {
   }
 
   private void refreshCache() {
-    API.api.getEpisodes("podcast").enqueue(new Callback<JSONObject>() {
+    API.api.getEpisodes("podcast").enqueue(new Callback<RssXml>() {
       @Override
-      public void onResponse(Response<JSONObject> response, Retrofit retrofit) {
-        final JSONObject inner = get(response.body(), "rss", "channel");
-        cachedEpisodes = inner.getJSONArray("item");
-        for (int i = 0; i < cachedEpisodes.length(); i++) {
-          final JSONObject thisEpisode = ((JSONObject)cachedEpisodes.get(i));
-          final String mp3String = getMP3URLString(thisEpisode);
-          thisEpisode.put("duration", DurationUtil.getDurationSeconds(mp3String));
+      public void onResponse(Response<RssXml> response, Retrofit retrofit) {
+        final RssJson rssJson = xmlToJson(response.body());
+        cachedEpisodes = rssJson;
+        for (Episode episode : cachedEpisodes.episodeList) {
+          episode.duration = DurationUtil.getDurationSeconds(episode.mp3Link);
         }
         lastUpdatedTimestamp = System.currentTimeMillis();
         System.err.println("Refreshed cached Friendcast feed");
@@ -51,26 +51,19 @@ public class FriendCachester {
     });
   }
 
-  private static String getMP3URLString(JSONObject object) {
-    for (String key : object.keySet()) {
-      final Object value = object.get(key);
-      if (value instanceof JSONObject) {
-        return getMP3URLString(((JSONObject)value));
-      }
-      if (value instanceof String) {
-        if (((String)value).endsWith("mp3")) {
-          return (String)value;
-        }
-      }
-    }
-    return "";
-  }
+  private static RssJson xmlToJson(RssXml xml) {
+    RssJson json = new RssJson();
+    for(Item item : xml.channel.item) {
+      RssJson.Episode episode = new Episode();
 
-  private static JSONObject get(JSONObject root, String... keys) {
-    JSONObject current = root;
-    for (String key : keys) {
-      current = ((JSONObject)current.get(key));
+      episode.episodeLink = item.link;
+      episode.title = item.title;
+      episode.date = item.pubDate;
+      episode.mp3Link = item.enclosure.url;
+      episode.mimeType = item.enclosure.type;
+
+      json.episodeList.add(episode);
     }
-    return current;
+    return json;
   }
 }
