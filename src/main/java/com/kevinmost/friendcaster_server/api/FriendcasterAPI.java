@@ -1,12 +1,11 @@
 package com.kevinmost.friendcaster_server.api;
 
-import com.kevinmost.friendcaster_server.retrofit.BestXMLConverterFactory;
+import com.kevinmost.friendcaster_server.model.RssXml;
 import com.squareup.okhttp.*;
-
-import org.json.JSONObject;
 
 import retrofit.Call;
 import retrofit.Retrofit;
+import retrofit.SimpleXmlConverterFactory;
 import retrofit.http.GET;
 import retrofit.http.Query;
 
@@ -18,7 +17,7 @@ class FriendcasterAPI {
 
     Retrofit retrofit = new Retrofit.Builder()
         .baseUrl(friendcastURL)
-        .addConverterFactory(new BestXMLConverterFactory())
+        .addConverterFactory(SimpleXmlConverterFactory.create())
         .client(new OkHttpClient())
         .build();
 
@@ -27,7 +26,7 @@ class FriendcasterAPI {
 
   public interface SBFCService {
     @GET("/")
-    Call<JSONObject> getEpisodes(@Query("feed") String feed);
+    Call<RssXml> getEpisodes(@Query("feed") String feed);
   }
 }
 
