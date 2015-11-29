@@ -9,25 +9,25 @@ import retrofit.SimpleXmlConverterFactory;
 import retrofit.http.GET;
 import retrofit.http.Query;
 
-class FriendcasterAPI {
-  public final SBFCService api;
+class FriendcasterApi {
+    public final SBFCService api;
 
-  public FriendcasterAPI() {
-    final String friendcastURL = "http://superbestfriendsplay.com/";
+    public FriendcasterApi() {
+        final String friendcastURL = "http://superbestfriendsplay.com/";
 
-    Retrofit retrofit = new Retrofit.Builder()
-        .baseUrl(friendcastURL)
-        .addConverterFactory(SimpleXmlConverterFactory.create())
-        .client(new OkHttpClient())
-        .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(friendcastURL)
+                .addConverterFactory(SimpleXmlConverterFactory.create())
+                .client(new OkHttpClient())
+                .build();
 
-    api = retrofit.create(SBFCService.class);
-  }
+        api = retrofit.create(SBFCService.class);
+    }
 
-  public interface SBFCService {
-    @GET("/")
-    Call<RssXml> getEpisodes(@Query("feed") String feed);
-  }
+    public interface SBFCService {
+        @GET("/")
+        Call<RssXml> getEpisodes(@Query("feed") String feed);
+    }
 }
 
 

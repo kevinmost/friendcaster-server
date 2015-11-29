@@ -9,7 +9,7 @@ import java.util.List;
 
 @Root(name = "rss", strict = false)
 public class RssXml {
-    @Element(name="channel", required = true)
+    @Element(name = "channel", required = true)
     public Channel channel;
 
     @Root(name = "channel", strict = false)
@@ -20,25 +20,41 @@ public class RssXml {
 
     @Root(name = "item", strict = false)
     public static class Item {
-        @Element(name="link", required = false)
+        @Element(name = "link", required = false)
         public String link;
 
-        @Element(name="title", required = true)
+        @Element(name = "title", required = true)
         public String title;
 
-        @Element(name="pubDate", required = false)
+        @Element(name = "pubDate", required = false)
         public String pubDate;
 
-        @Element(name="enclosure", required = true)
+        @Element(name = "enclosure", required = true)
         public Enclosure enclosure;
     }
 
     @Root(name = "enclosure", strict = false)
     public static class Enclosure {
-        @Attribute(name="url", required = true)
+        @Attribute(name = "url", required = true)
         public String url;
 
-        @Attribute(name="type", required = true)
+        @Attribute(name = "type", required = true)
         public String type;
+    }
+
+    public RssJson toJSON() {
+        RssJson json = new RssJson();
+        for (Item item : channel.item) {
+            RssJson.Episode episode = new RssJson.Episode();
+
+            episode.episodeLink = item.link;
+            episode.title = item.title;
+            episode.date = item.pubDate;
+            episode.mp3Link = item.enclosure.url;
+            episode.mimeType = item.enclosure.type;
+
+            json.episodeList.add(episode);
+        }
+        return json;
     }
 }

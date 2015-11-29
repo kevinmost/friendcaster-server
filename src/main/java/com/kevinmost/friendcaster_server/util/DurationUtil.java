@@ -7,13 +7,13 @@ import java.net.URL;
 import javax.sound.sampled.*;
 
 public class DurationUtil {
-  public static long getDurationSeconds(String urlString) {
-    try {
-      final AudioFileFormat stream = AudioSystem.getAudioFileFormat(new URL(urlString));
-      return Long.parseLong(String.valueOf(stream.properties().get("mp3.id3tag.length"))) / 1000L;
-    } catch (UnsupportedAudioFileException | IOException e) {
-      e.printStackTrace();
+    public static long getDurationSeconds(String urlString) {
+        try {
+            final AudioFileFormat stream = AudioSystem.getAudioFileFormat(new URL(urlString));
+            return Long.parseLong(String.valueOf(stream.properties().get("mp3.id3tag.length"))) / 1000L;
+        } catch (UnsupportedAudioFileException | IOException e) {
+            e.printStackTrace();
+        }
+        return 0L;
     }
-    return 0L;
-  }
 }
