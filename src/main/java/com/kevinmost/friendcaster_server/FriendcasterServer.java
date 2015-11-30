@@ -18,10 +18,11 @@ public class FriendcasterServer {
         Spark.get("/episodes", (request, response) -> {
             final String pageQueryParam = request.queryParams("page");
             final RssJson episodes = FRIENDCASTER_CACHE.get();
+            response.type("application/json");
             try {
                 final int page = Integer.parseInt(pageQueryParam);
                 return setHasNext(episodes, 10 * page,
-                        Math.min(10 * (page + 1), episodes.episodeList.size() - 1));
+                        Math.min(10 * (page + 1), episodes.episodeList.size()));
             } catch (NumberFormatException ignored) {
                 return setHasNext(episodes);
             }
