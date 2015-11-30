@@ -36,9 +36,7 @@ public class FriendCachester {
             @Override
             public void onResponse(Response<RssXml> response, Retrofit retrofit) {
                 final RssJson result = response.body().toJSON();
-                for (Episode episode : result.episodeList) {
-                    episode.duration = DurationUtil.getDurationSeconds(episode.mp3Link);
-                }
+                DurationUtil.populateDurations(result);
                 lastUpdatedTimestamp = System.currentTimeMillis();
                 System.err.println("Refreshed cached Friendcast feed");
                 cachedEpisodes = result;
